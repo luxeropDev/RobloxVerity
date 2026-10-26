@@ -77,7 +77,7 @@ Six clues: shrine carving, tour-bus sign, cabin note (night), mushroom ring (nig
 |---|---|
 | **Over the Bridge** (victory) | Bridge repaired and dawn of night ≥ `VictoryNight` reached |
 | **SUNNY's Goodbye** (secret victory) | As above + all 6 clues found; SUNNY powers down politely |
-| **Lights Out** (defeat) | Team Courage reaches 0, or every player captured at once |
+| **Lights Out** (defeat) | Team Courage reaches 0, or (with 2+ players) every player captured at once |
 | **Forever Campers** (soft defeat) | Dawn of `MaxNights` reached without the bridge |
 
 ## 9. Comedy beats

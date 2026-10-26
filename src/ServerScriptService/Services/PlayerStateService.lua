@@ -367,17 +367,17 @@ function PlayerStateService.capture(player: Player): boolean
 	PlayerStateService.Captured:Fire(player)
 	PlayerStateService.changeCourage(-1)
 
+	-- Team wipe only counts with 2+ players; solo players rely on Courage and the cage timer.
 	local allCaptured = true
-	local any = false
+	local count = 0
 	for _, other in ipairs(PlayerStateService.getPlayers()) do
-		any = true
+		count += 1
 		local r = records[other]
 		if r and not r.Captured then
 			allCaptured = false
-			break
 		end
 	end
-	if any and allCaptured then
+	if count >= 2 and allCaptured then
 		PlayerStateService.AllCaptured:Fire()
 	end
 	return true

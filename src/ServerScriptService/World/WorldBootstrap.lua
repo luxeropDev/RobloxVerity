@@ -621,6 +621,13 @@ function WorldBootstrap.build(seed: number)
 	end
 
 	root.Parent = workspace
+	-- Template places (e.g. Baseplate) ship their own SpawnLocation; disable it so everyone spawns at camp.
+	for _, d in ipairs(workspace:GetDescendants()) do
+		if d:IsA("SpawnLocation") and d ~= world.SpawnLocation then
+			d.Enabled = false
+			warn("[World] Disabled extra SpawnLocation " .. d:GetFullName())
+		end
+	end
 	world.PartCount = partCount
 	if partCount > WORLD_CFG.MaxParts then
 		warn(string.format("[World] Part budget exceeded: %d > %d", partCount, WORLD_CFG.MaxParts))
