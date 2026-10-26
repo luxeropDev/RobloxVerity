@@ -32,6 +32,7 @@ local endRequest = nil -- ending id that interrupts the current phase
 local restartVotes = {} -- [Player] = true
 local restartLimiter = RateLimiter.new(GameConfig.RateLimits.RequestRestart.MaxCalls, GameConfig.RateLimits.RequestRestart.Window)
 local roundStartedAt = 0
+local lastRecap = nil -- re-sent to players who join during Results
 
 local function log(...)
 	if GameConfig.Debug.LogPhases then
@@ -149,6 +150,7 @@ local function resetRound()
 	Services.PlayerStateService.resetRound()
 	Services.PlayerStateService.resetCourage()
 	Services.SunnyService.reset()
+	lastRecap = nil
 	Remotes.get("Recap"):FireAllClients(nil)
 	PhaseService.RoundReset:Fire(round)
 end
@@ -259,6 +261,7 @@ local function runRound()
 		nightsSurvived = night - 1
 	end
 	local recap = buildRecap(ending, nightsSurvived)
+	lastRecap = recap
 	Services.SunnyService.onEnding(ending)
 	Remotes.get("Recap"):FireAllClients(recap)
 	table.clear(restartVotes)
@@ -308,6 +311,11 @@ function PhaseService.start()
 		restartLimiter:reset(player)
 	end)
 	local PS = Services.PlayerStateService
+	PS.PlayerJoined:Connect(function(player)
+		if phase == Types.Phase.Results and lastRecap then
+			Remotes.get("Recap"):FireClient(player, lastRecap)
+		end
+	end)
 	PS.CourageDepleted:Connect(function()
 		PhaseService.requestEnding(Types.Ending.LightsOut)
 	end)

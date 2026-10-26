@@ -1,6 +1,6 @@
 # Security Review
 
-Scope: all server entry points reachable by a client. Method: static code review only (no runtime exploit testing). Reviewers: main session, plus one independent review subagent run with the qa-security brief (see section 5).
+Scope: all server entry points reachable by a client. Method: static code review only (no runtime exploit testing). Reviewers: main session, plus one independent general-purpose subagent briefed with `.claude/agents/qa-security.md` (static reading only; findings in section 5).
 
 ## 1. Client-reachable entry points
 | Entry | Handler | Validation |
@@ -44,7 +44,19 @@ See the table below. Severity: High = exploit or game-breaking; Medium = incorre
 
 | ID | Severity | Location | Finding | Status |
 |---|---|---|---|---|
-| (filled after the independent review) | | | | |
+| Q1 | High | `Services/SunnyService.lua` enterState | `targetHidSpotted` never cleared on Searching/Stalking entry → SUNNY loops Stalking↔Searching every second and never chases | Fixed (cleared when consumed) |
+| Q2 | Medium | `Services/PlayerStateService.lua` capture | Solo player lost the round on the first capture (AllCaptured) | Fixed (team wipe requires 2+ players) |
+| Q3 | Medium | `Services/CampService.lua` hitBarricade | Broken barricade could never be rebuilt (level stayed maxed) | Fixed (level reset to 0 on break) |
+| Q4 | Medium | `Services/SunnyNavigator.lua` setGoal | Steering goal went stale (only updated on > 8 stud moves, never while computing) | Fixed (goal always updated; recompute tracks `computedGoal`). SUNNY slower than walk speed is intended (fairness) |
+| Q5 | Low | `Services/PlayerStateService.lua` hiding | Players could re-hide immediately after forced exit, staying untargetable all night | Fixed (`Hiding.ReHideCooldown` 10 s) |
+| Q6 | Low | `Services/CampService.lua` | Upgrade limiter entries not cleared on leave | Fixed |
+| Q7 | Low | `Services/PlayerStateService.lua` PlayerRemoving | Leave of last free player did not trigger team-wipe check | Fixed (`checkTeamWipe` on leave) |
+| Q8 | Low | `NightEvents/StrangeRadio.lua` | Cleanup restored pre-event radio color even if the radio was fixed meanwhile | Fixed (`ObjectiveService.refreshRadio`) |
+| Q9 | Low | `Services/ResourceService.lua` shiftNodes | Spare positions picked with replacement → stacked nodes | Fixed (without replacement) |
+| Q10 | Low | `Services/SunnyNavigator.lua` | Successful path with 0 waypoints would index `waypoints[0]` | Fixed (treated as failure) |
+| Q11 | Low | `Services/PhaseService.lua` | Players joining during Results got no recap | Fixed (last recap re-sent on join) |
+
+No finding involved a client-trust or remote-validation hole; the reviewer confirmed all three request remotes and all prompt handlers validate rate, state and distance.
 
 ## 6. Residual risks (accepted for MVP)
 - Speed/teleport exploits on the client's own character are not detected (no server movement validation). Impact: an exploiter can reach prompts faster; all prompt actions are still distance-checked and limited.

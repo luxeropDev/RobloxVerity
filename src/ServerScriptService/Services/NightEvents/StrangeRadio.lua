@@ -14,9 +14,7 @@ return {
 		local radioLight = world.RadioLight
 		local originalColor = radioLight.Color
 		ctx.Trove:Add(function()
-			if radioLight.Parent then
-				radioLight.Color = originalColor
-			end
+			ctx.Services.ObjectiveService.refreshRadio()
 		end)
 
 		local text

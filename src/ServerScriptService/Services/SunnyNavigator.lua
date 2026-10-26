@@ -35,6 +35,7 @@ function SunnyNavigator:reset()
 	self.waypoints = nil
 	self.index = 0
 	self.goal = nil
+	self.computedGoal = nil
 	self.failedUntil = 0
 	self.driftUntil = 0
 	self.lastProgressPos = nil
@@ -63,9 +64,13 @@ function SunnyNavigator:_compute(from: Vector3, goal: Vector3)
 			return -- superseded or timed out
 		end
 		self.computing = false
+		local waypoints = nil
 		if ok and path.Status == Enum.PathStatus.Success then
-			self.waypoints = path:GetWaypoints()
-			self.index = math.min(2, #self.waypoints)
+			waypoints = path:GetWaypoints()
+		end
+		if waypoints and #waypoints > 0 then
+			self.waypoints = waypoints
+			self.index = math.min(2, #waypoints)
 		else
 			self.waypoints = nil
 			self.failedUntil = os.clock() + 1
@@ -78,15 +83,14 @@ function SunnyNavigator:setGoal(from: Vector3, goal: Vector3)
 	local cfg = self.cfg
 	local now = os.clock()
 	goal = flat(goal)
-	local moved = self.goal == nil or (goal - self.goal).Magnitude > cfg.RecomputeDistance
-	if moved then
-		self.goal = goal
-	end
+	-- Always steer toward the newest goal; only recompute the path when it moved enough or got old.
+	local moved = self.computedGoal == nil or (goal - self.computedGoal).Magnitude > cfg.RecomputeDistance
+	self.goal = goal
 	if self.computing or now < self.failedUntil then
 		return
 	end
 	if moved or now - self.lastCompute > cfg.RecomputeInterval then
-		self.goal = goal
+		self.computedGoal = goal
 		self:_compute(flat(from), goal)
 	end
 end

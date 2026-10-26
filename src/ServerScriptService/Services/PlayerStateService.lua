@@ -61,6 +61,7 @@ local function newRecord()
 		Hidden = nil,
 		HiddenAt = 0,
 		SpookedUntil = 0,
+		HideBlockedUntil = 0,
 		Glow = 0,
 		Status = Types.PlayerStatus.Safe,
 		Stats = newStats(),
@@ -346,6 +347,21 @@ function PlayerStateService.unhide(player: Player)
 	player:SetAttribute(Types.PlayerAttr.Hidden, false)
 end
 
+-- Team wipe only counts with 2+ players; solo players rely on Courage and the cage timer.
+function PlayerStateService.checkTeamWipe()
+	local count = 0
+	for _, other in ipairs(PlayerStateService.getPlayers()) do
+		count += 1
+		local r = records[other]
+		if r and not r.Captured then
+			return
+		end
+	end
+	if count >= 2 then
+		PlayerStateService.AllCaptured:Fire()
+	end
+end
+
 function PlayerStateService.capture(player: Player): boolean
 	local rec = records[player]
 	if not rec or rec.Captured then
@@ -367,19 +383,7 @@ function PlayerStateService.capture(player: Player): boolean
 	PlayerStateService.Captured:Fire(player)
 	PlayerStateService.changeCourage(-1)
 
-	-- Team wipe only counts with 2+ players; solo players rely on Courage and the cage timer.
-	local allCaptured = true
-	local count = 0
-	for _, other in ipairs(PlayerStateService.getPlayers()) do
-		count += 1
-		local r = records[other]
-		if r and not r.Captured then
-			allCaptured = false
-		end
-	end
-	if count >= 2 and allCaptured then
-		PlayerStateService.AllCaptured:Fire()
-	end
+	PlayerStateService.checkTeamWipe()
 	return true
 end
 
@@ -437,6 +441,10 @@ local function onHide(player: Player, spot: BasePart)
 	end
 	local rec = records[player]
 	if not rec or rec.Captured or rec.Hidden then
+		return
+	end
+	if os.clock() < rec.HideBlockedUntil then
+		PlayerStateService.notify(player, "Your legs need a moment before hiding again!", "warn")
 		return
 	end
 	if spotOccupant[spot] then
@@ -525,6 +533,7 @@ local function tick()
 		if rec.Hidden then
 			if now - rec.HiddenAt >= GameConfig.Hiding.MaxDuration then
 				PlayerStateService.unhide(player)
+				rec.HideBlockedUntil = now + GameConfig.Hiding.ReHideCooldown
 				PlayerStateService.notify(player, "Your legs fell asleep. You had to come out!", "warn")
 			elseif not rec.Hidden.Parent then
 				PlayerStateService.unhide(player)
@@ -616,6 +625,7 @@ local function onPlayerRemoving(player: Player)
 	promptLimiter:reset(player)
 	refreshRescuePrompt()
 	PlayerStateService.PlayerLeft:Fire(player)
+	PlayerStateService.checkTeamWipe()
 end
 
 -- Resets per-round state and respawns everyone at camp. Glow persists for the server session.
@@ -629,6 +639,7 @@ function PlayerStateService.resetRound()
 		rec.CapturedAt = 0
 		rec.ImmuneUntil = 0
 		rec.SpookedUntil = 0
+		rec.HideBlockedUntil = 0
 		rec.Stats = newStats()
 		rec.Status = Types.PlayerStatus.Safe
 		PlayerStateService.sync(player)

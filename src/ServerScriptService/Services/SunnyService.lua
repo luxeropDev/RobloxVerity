@@ -266,6 +266,7 @@ local function enterState(newState: string, reason: string)
 	SunnyModel.setMood(h, moodFor(newState))
 
 	if newState == S.Stalking then
+		targetHidSpotted = false
 		setAlert(target, "Watched")
 		sayLine("Stalk")
 		Services.PlayerStateService.playSound("Giggle", h.Root.Position)
@@ -279,6 +280,7 @@ local function enterState(newState: string, reason: string)
 		setAlert(target, "Clear")
 		sayLine("Search")
 		setGoal(lastKnownPos or groundPosition())
+		targetHidSpotted = false -- consumed by this transition
 	elseif newState == S.Retreating then
 		clearAlerts()
 		if reason == "target reached light" then

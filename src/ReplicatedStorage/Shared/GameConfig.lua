@@ -137,6 +137,7 @@ GameConfig.Capture = {
 
 GameConfig.Hiding = {
 	MaxDuration = 25,
+	ReHideCooldown = 10, -- after being forced out, cannot hide again for this long
 	PromptDistance = 7,
 	ExitOffset = 4,
 	SpottedGrace = 1.5, -- hiding within this time after being seen during a chase makes SUNNY search the spot

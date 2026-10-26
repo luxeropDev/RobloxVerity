@@ -242,7 +242,9 @@ function CampService.hitBarricade(): boolean
 	refreshBarricadeLook()
 	if barricadeHp <= 0 then
 		barricadeTrove:Clean()
-		Services.PlayerStateService.notifyAll("SUNNY broke through the fence!", "danger")
+		levels.Barricade = 0 -- can be rebuilt next day
+		CampService.broadcastStock()
+		Services.PlayerStateService.notifyAll("SUNNY broke through the fence! Rebuild it tomorrow.", "danger")
 	else
 		Services.PlayerStateService.notifyAll(string.format("SUNNY is bonking the fence! (%d left)", barricadeHp), "warn")
 	end
@@ -478,6 +480,9 @@ function CampService.start()
 
 	Services.PlayerStateService.PlayerJoined:Connect(function(player)
 		CampService.broadcastStock(player)
+	end)
+	Services.PlayerStateService.PlayerLeft:Connect(function(player)
+		upgradeLimiter:reset(player)
 	end)
 
 	CampService.reset()

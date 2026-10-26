@@ -110,10 +110,11 @@ function ResourceService.shiftNodes(count: number, rng: Random): number
 			table.insert(candidates, node)
 		end
 	end
-	for _ = 1, math.min(count, #candidates) do
+	local free = table.clone(spare)
+	for _ = 1, math.min(count, #candidates, #free) do
 		local index = rng:NextInteger(1, #candidates)
 		local node = table.remove(candidates, index)
-		local target = spare[rng:NextInteger(1, #spare)]
+		local target = table.remove(free, rng:NextInteger(1, #free))
 		local current = node.Model:GetPivot()
 		local offset = Vector3.new(target.X, 0, target.Z) - Vector3.new(current.Position.X, 0, current.Position.Z)
 		node.Model:PivotTo(current + offset)

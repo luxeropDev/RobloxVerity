@@ -30,6 +30,7 @@ local radioFixed = false
 local bridgeStage = 0
 local radioPrompt
 local bridgePrompt
+local refreshRadioVisuals -- defined below
 
 local function define()
 	table.clear(objectives)
@@ -94,6 +95,11 @@ end
 function ObjectiveService.isComplete(id: string): boolean
 	local o = byId[id]
 	return o ~= nil and o.Complete
+end
+
+-- Re-applies the radio light/prompt for the current state (used after night events tint it).
+function ObjectiveService.refreshRadio()
+	refreshRadioVisuals()
 end
 
 function ObjectiveService.isRadioFixed(): boolean
@@ -208,7 +214,7 @@ local function refreshBridgeVisuals()
 	end
 end
 
-local function refreshRadioVisuals()
+function refreshRadioVisuals()
 	if radioFixed then
 		World.RadioLight.Color = Color3.fromRGB(80, 255, 120)
 	else
