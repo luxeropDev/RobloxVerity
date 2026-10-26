@@ -1,0 +1,39 @@
+{
+  "name": "SurviveTheNight",
+  "tree": {
+    "$className": "DataModel",
+    "ReplicatedStorage": {
+      "Shared": {
+        "$path": "src/ReplicatedStorage/Shared"
+      }
+    },
+    "ServerScriptService": {
+      "$path": "src/ServerScriptService"
+    },
+    "ServerStorage": {
+      "Tests": {
+        "$className": "Folder",
+        "TestRunner": {
+          "$path": "tests/TestRunner.lua"
+        },
+        "Unit": {
+          "$path": "tests/unit"
+        },
+        "Integration": {
+          "$path": "tests/integration"
+        }
+      }
+    },
+    "StarterPlayer": {
+      "StarterPlayerScripts": {
+        "$path": "src/StarterPlayer/StarterPlayerScripts"
+      }
+    },
+    "Players": {
+      "$properties": {
+        "CharacterAutoLoads": true,
+        "RespawnTime": 3
+      }
+    }
+  }
+}

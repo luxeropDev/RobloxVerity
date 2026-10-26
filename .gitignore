@@ -1,0 +1,23 @@
+# Rojo / Roblox build outputs
+*.rbxl
+*.rbxlx
+*.rbxm
+*.rbxmx
+sourcemap.json
+
+# Tooling
+/roblox.toml
+/.vscode/
+/.idea/
+__pycache__/
+*.pyc
+
+# Secrets (never commit)
+.env
+.env.*
+*.pem
+*.key
+
+# OS
+.DS_Store
+Thumbs.db
